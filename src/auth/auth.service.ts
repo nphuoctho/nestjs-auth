@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
@@ -56,6 +57,42 @@ export class AuthService {
     };
   }
 
+  async verifyEmail(token: string, res: Response) {
+    const user = await this.userService.findByVerifycationToken(token);
+
+    if (!user || !user?.verificationToken)
+      throw new BadRequestException('Invalid verifycation token');
+
+    if (
+      user.verificationTokenExpiresAt &&
+      user.verificationTokenExpiresAt < new Date()
+    )
+      throw new BadRequestException(
+        'Verification token has expired. Please request a new on',
+      );
+
+    await this.userService.update(user.id, {
+      isVerified: true,
+      verificationToken: null,
+      verificationTokenExpiresAt: null,
+    });
+
+    const tokens = await this.generateToken(user);
+    await this.saveRefreshToken(user.id, tokens.refreshToken);
+    this.setRefreshTokenCookie(res, tokens.refreshToken);
+
+    return {
+      message: 'Email verified successfully. You are now logged in',
+      accessToken: tokens.accessToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
+    };
+  }
+
   async login(dto: LoginDto, res: Response) {
     const user = await this.userService.findByEmail(dto.email);
 
@@ -81,6 +118,49 @@ export class AuthService {
         email: user.email,
         role: user.role,
       },
+    };
+  }
+
+  async refresh(refreshToken: string, res: Response) {
+    if (!refreshToken)
+      throw new UnauthorizedException('No refresh token provided');
+
+    let payload: { sub: string; email: string };
+    try {
+      payload = await this.jwtService.verifyAsync(refreshToken, {
+        secret: this.configService.get('JWT_REFRESH_SECRET'),
+      });
+    } catch {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+
+    const user = await this.userService.findById(payload.sub);
+
+    if (!user || !user.refreshTokenHash)
+      throw new UnauthorizedException('Invalid refresh token');
+
+    const tokenMatch = await argon2.verify(refreshToken, user.refreshTokenHash);
+
+    if (!tokenMatch) throw new UnauthorizedException('Invalid refresh token');
+
+    const tokens = await this.generateToken(user);
+    await this.saveRefreshToken(user.id, tokens.refreshToken);
+    this.setRefreshTokenCookie(res, tokens.refreshToken);
+
+    return {
+      accessToken: tokens.accessToken,
+    };
+  }
+
+  async logout(userId: string, res: Response) {
+    await this.userService.update(userId, {
+      refreshTokenHash: null,
+    });
+
+    res.clearCookie('refresh_token');
+
+    return {
+      message: 'Logout successfully',
     };
   }
 
