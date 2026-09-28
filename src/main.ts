@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module.js';
 import { API_VERSION } from './common/constants/api-version.js';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
+import { swaggerCustomOptions } from './common/swagger/swagger-options.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -34,7 +35,7 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  SwaggerModule.setup('api/docs', app, document, swaggerCustomOptions);
 
   const port = configService.get<number>('PORT', 3000);
   await app.listen(port);
