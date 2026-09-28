@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { render } from '@react-email/render';
 import { Resend } from 'resend';
+import { API_VERSION } from '../common/constants/api-version.js';
 import {
   ResetPasswordEmail,
   resetPasswordEmailText,
@@ -52,7 +53,7 @@ export class EmailService {
   ) {
     const props = {
       name,
-      verifyUrl: this.buildUrl('/api/auth/verify-email', token),
+      verifyUrl: this.buildUrl(`/api/v${API_VERSION}/auth/verify-email`, token),
       expiresIn: this.formatExpiry(expiresAt),
     };
 
@@ -71,7 +72,7 @@ export class EmailService {
   ) {
     const props = {
       name,
-      resetUrl: this.buildUrl('/api/auth/reset-password', token),
+      resetUrl: this.buildUrl(`/api/v${API_VERSION}/auth/reset-password`, token),
       expiresIn: this.formatExpiry(expiresAt),
     };
 

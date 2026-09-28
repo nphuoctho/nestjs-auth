@@ -41,7 +41,7 @@ export default function ResetPasswordEmailPreview() {
   return (
     <ResetPasswordEmail
       name="Tho"
-      resetUrl="http://localhost:3999/api/auth/reset-password?token=sample-token"
+      resetUrl="http://localhost:3999/api/v1/auth/reset-password?token=sample-token"
       expiresIn="15 phút"
     />
   );

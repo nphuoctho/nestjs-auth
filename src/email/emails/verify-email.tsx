@@ -40,7 +40,7 @@ export default function VerifyEmailPreview() {
   return (
     <VerifyEmail
       name="Tho"
-      verifyUrl="http://localhost:3999/api/auth/verify-email?token=sample-token"
+      verifyUrl="http://localhost:3999/api/v1/auth/verify-email?token=sample-token"
       expiresIn="24 giờ"
     />
   );
