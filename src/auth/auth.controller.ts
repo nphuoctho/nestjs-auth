@@ -13,6 +13,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service.js';
 import { Public } from '../common/decorators/public.decorator.js';
 import { RegisterDto } from './dto/register.dto.js';
+import { ResendVerificationDto } from './dto/resend-verification.dto.js';
 import type { Request, Response } from 'express';
 import { LoginDto } from './dto/login.dto.js';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
@@ -38,6 +39,14 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     return this.authService.verifyEmail(token, res);
+  }
+
+  @Public()
+  @Post('resend-verification')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Resend the email verification link' })
+  async resendVerification(@Body() dto: ResendVerificationDto) {
+    return this.authService.resendVerification(dto.email);
   }
 
   @Public()

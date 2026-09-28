@@ -31,7 +31,6 @@ export class AuthService {
       throw new ConflictException('An account with this email already exists');
 
     const passwordHash = await argon2.hash(dto.password);
-
     const verificationToken = crypto.randomBytes(32).toString('hex');
     const verificationTokenExpiresAt = new Date(
       Date.now() + 24 * 60 * 60 * 1000,
@@ -54,6 +53,34 @@ export class AuthService {
     return {
       message:
         'Registration Successful. Please check your email to verify your account.',
+    };
+  }
+
+  async resendVerification(email: string) {
+    const user = await this.userService.findByEmail(email);
+
+    if (!user) throw new BadRequestException('No account found with this email');
+    if (user.isVerified)
+      throw new BadRequestException('This email is already verified');
+
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationTokenExpiresAt = new Date(
+      Date.now() + 24 * 60 * 60 * 1000,
+    );
+
+    await this.userService.update(user.id, {
+      verificationToken,
+      verificationTokenExpiresAt,
+    });
+
+    await this.emailService.sendVerificationEmail(user.email, {
+      name: user.name,
+      token: verificationToken,
+      expiresAt: verificationTokenExpiresAt,
+    });
+
+    return {
+      message: 'Verification email sent. Please check your inbox.',
     };
   }
 
