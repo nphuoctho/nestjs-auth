@@ -10,11 +10,11 @@ import {
   Res,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import type { AuthService } from './auth.service.js';
+import { AuthService } from './auth.service.js';
 import { Public } from '../common/decorators/public.decorator.js';
-import type { RegisterDto } from './dto/register.dto.js';
+import { RegisterDto } from './dto/register.dto.js';
 import type { Request, Response } from 'express';
-import type { LoginDto } from './dto/login.dto.js';
+import { LoginDto } from './dto/login.dto.js';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import type { User } from '../db/schema.js';
 
