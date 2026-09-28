@@ -59,8 +59,7 @@ export class AuthService {
   async resendVerification(email: string) {
     const user = await this.userService.findByEmail(email);
 
-    if (!user)
-      throw new BadRequestException('No account found with this email');
+    if (!user) throw new BadRequestException('No account found with this email');
     if (user.isVerified)
       throw new BadRequestException('This email is already verified');
 
@@ -189,60 +188,6 @@ export class AuthService {
 
     return {
       message: 'Logout successfully',
-    };
-  }
-
-  async forgotPassword(email: string) {
-    const user = await this.userService.findByEmail(email);
-
-    if (!user)
-      return {
-        message:
-          'If an account with that email exists, a reset link has been sent.',
-      };
-
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetTokenExpiresAt = new Date(Date.now() + 60 * 60 * 1000);
-
-    await this.userService.update(user.id, {
-      resetToken,
-      resetTokenExpiresAt,
-    });
-
-    await this.emailService.sendPasswordResetEmail(user.email, {
-      name: user.name,
-      token: resetToken,
-      expiresAt: resetTokenExpiresAt,
-    });
-
-    return {
-      message:
-        'If an account with that email exists, a reset link has been sent.',
-    };
-  }
-
-  async resetPassword(token: string, newPassword: string) {
-    const user = await this.userService.findByResetToken(token);
-
-    if (!user || !user.resetToken)
-      throw new BadRequestException('Invalid reset token');
-
-    if (user?.resetTokenExpiresAt && user?.resetTokenExpiresAt < new Date()) {
-      throw new BadRequestException(
-        'Reset token has expired. Please request new one.',
-      );
-    }
-
-    const passwordHash = await argon2.hash(newPassword);
-
-    await this.userService.update(user?.id, {
-      passwordHash,
-      resetToken: null,
-      resetTokenExpiresAt: null,
-    });
-
-    return {
-      message: 'Password reset successfull. You can now log in.',
     };
   }
 
