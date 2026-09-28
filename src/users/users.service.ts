@@ -30,6 +30,12 @@ export class UsersService {
     });
   }
 
+  async findByResetToken(token: string): Promise<User | undefined> {
+    return this.db.query.users.findFirst({
+      where: eq(users.resetToken, token),
+    });
+  }
+
   async create(data: NewUser): Promise<User> {
     const [user] = await this.db.insert(users).values(data).returning();
     return user;

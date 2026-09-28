@@ -18,6 +18,8 @@ import type { Request, Response } from 'express';
 import { LoginDto } from './dto/login.dto.js';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import type { User } from '../db/schema.js';
+import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
+import { ResetPasswordDto } from './dto/reset-password.dto.js';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -95,5 +97,21 @@ export class AuthController {
       role: user.role,
       isVerified: user.isVerified,
     };
+  }
+
+  @Public()
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Request a password reset email' })
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto.email);
+  }
+
+  @Public()
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Reset Password using token from email' })
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto.token, dto.password);
   }
 }
