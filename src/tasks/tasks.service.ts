@@ -9,7 +9,7 @@ import type { UpdateTaskDto } from './dto/update-task.dto.js';
 export class TasksService {
   constructor(@Inject(DATABASE) private readonly db: Database) {}
 
-  async findAllForUser(userId: string): Promise<Task[] | []> {
+  async findAllForUser(userId: string): Promise<Task[]> {
     return this.db.query.tasks.findMany({
       where: eq(tasks.userId, userId),
     });
