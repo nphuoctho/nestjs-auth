@@ -1,13 +1,9 @@
-import {
-  ForbiddenException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { Task, tasks } from '../db/schema.js';
-import { DATABASE, type Database } from '../db/index.js';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { and, eq } from 'drizzle-orm';
+import { type Database, DATABASE } from '../db/index.js';
+import { Task, tasks } from '../db/schema.js';
 import { CreateTaskDto } from './dto/create-task.dto.js';
+import type { UpdateTaskDto } from './dto/update-task.dto.js';
 
 @Injectable()
 export class TasksService {
@@ -28,35 +24,25 @@ export class TasksService {
     return task;
   }
 
-  async update(id: string, userId: string, data: Partial<CreateTaskDto>) {
-    const task = await this.db.query.tasks.findFirst({
-      where: eq(tasks.id, id),
-    });
+  async update(id: string, userId: string, data: UpdateTaskDto): Promise<Task> {
+    const [task] = await this.db
+      .update(tasks)
+      .set({ ...data, updatedAt: new Date() })
+      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+      .returning();
 
     if (!task) throw new NotFoundException('Task not found');
 
-    if (task.userId !== userId)
-      throw new ForbiddenException('You do not own this task');
-
-    const updated = await this.db
-      .update(tasks)
-      .set({ ...data, updatedAt: new Date() })
-      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
-
-    return updated;
+    return task;
   }
 
   async delete(id: string, userId: string) {
-    const task = await this.db.query.tasks.findFirst({
-      where: eq(tasks.id, id),
-    });
+    const [task] = await this.db
+      .delete(tasks)
+      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+      .returning({ id: tasks.id });
 
     if (!task) throw new NotFoundException('Task not found');
-
-    if (task.userId !== userId)
-      throw new ForbiddenException('You do not own this task');
-
-    await this.db.delete(tasks).where(eq(tasks.id, id));
 
     return { message: 'Task delete successfully!' };
   }
