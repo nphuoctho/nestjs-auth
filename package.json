@@ -41,12 +41,12 @@
     "cookie-parser": "^1.4.7",
     "drizzle-orm": "^0.45.2",
     "express": "^5.2.1",
+    "mailtrap": "^4.10.0",
     "pg": "^8.23.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-email": "^6.9.5",
     "reflect-metadata": "^0.2.2",
-    "resend": "^6.28.1",
     "rxjs": "^7.8.1",
     "swagger-ui-express": "^5.0.1"
   },
